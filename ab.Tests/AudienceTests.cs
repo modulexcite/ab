@@ -7,40 +7,40 @@ namespace ab.Tests
     [TestFixture]
     public class AudienceTests
     {
-        [Test]
-        public void Splits_have_acceptable_distribution()
+        [TestCase(10000, 2)]
+        [TestCase(10000, 3)]
+        [TestCase(10000, 4)]
+        public void Splits_have_acceptable_distribution(int count, int n)
         {
-            const int total = 1000;
             var items = new List<string>();
-            for(var i = 0; i < total; i++)
+            for(var i = 0; i < count; i++)
             {
                 items.Add(Guid.NewGuid().ToString());
             }
 
-            var a = new List<string>();
-            var b = new List<string>();
-            foreach(var item in items)
+            var hash = new Dictionary<int, List<string>>(n);
+            for(var i = 0; i < n; i++)
             {
-                if(Audience.SplitTwo.Value(item))
-                {
-                    b.Add(item);
-                }
-                else
-                {
-                    a.Add(item);
-                }
+                hash.Add(i + 1, new List<string>());
             }
 
-            var aPercent = (float) a.Count/total;
-            var bPercent = (float)b.Count / total;
-            var delta = Math.Abs(aPercent - bPercent);
+            foreach(var item in items)
+            {
+                var index = Audience.Split.Value(item, n);
+                hash[index].Add(item);
+            }
 
-            Console.WriteLine(a.Count + ": " + aPercent);
-            Console.WriteLine(b.Count + ": " + bPercent);
-            Console.WriteLine("Within " + delta);
-
-            Assert.AreEqual(total, a.Count + b.Count);
-            Assert.IsTrue(delta < 0.01f); // One percentage point
+            var perfect = ((float)count / n) / count;
+            var total = 0;
+            for(var i = 0; i < n; i++)
+            {
+                var entries = hash[i + 1].Count;
+                total += entries;
+                var percent = (float) entries/count;
+                Console.WriteLine("Bucket {0} : {1}({2})", (i + 1), entries, percent);
+                Assert.That(percent, Is.EqualTo(perfect).Within(0.5), "Distribution in bucket one was only " + percent);
+            }
+            Assert.AreEqual(count, total, "Not all items were distributed!");
         }
     }
 }

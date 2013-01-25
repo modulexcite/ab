@@ -1,23 +1,16 @@
 using System;
+using System.Web;
 using System.Web.Mvc;
 
 namespace ab.Mvc
 {
     public static class HtmlExtensions
     {
-        public static MvcExperiment AB(this HtmlHelper helper, string experiment)
+        public static IHtmlString AB(this HtmlHelper helper, string experiment)
         {
-            var split = Audience.SplitTwo.Value(Identity.Default());
-            Console.WriteLine(split);
-            return new MvcExperiment();
-        }
-    }
+            var exp = Experiments.All[new ExperimentKey(experiment)];
+            Console.WriteLine(exp.Group);
+            return new MvcHtmlString(exp.Group.ToString());
+        }}
 
-    public class MvcExperiment : IDisposable
-    {
-        public void Dispose()
-        {
-            
-        }
-    }
 }

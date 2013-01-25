@@ -143,6 +143,10 @@
       <Project>{54DD20B3-AC53-4578-BD63-9AFB060C08F3}</Project>
       <Name>ab.Mvc</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ab\ab.csproj">
+      <Project>{94CED41C-F6B0-4D70-B9C1-74270848DAC8}</Project>
+      <Name>ab</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Home\Index.cshtml" />

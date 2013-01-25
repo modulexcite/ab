@@ -2,7 +2,6 @@
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Routing;
-using ab.Mvc;
 
 namespace ab.Lab
 {
@@ -10,6 +9,8 @@ namespace ab.Lab
     {
         protected void Application_Start()
         {
+            Experiments.Register("Foo");
+
             AreaRegistration.RegisterAllAreas();
             WebApiConfig.Register(GlobalConfiguration.Configuration);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
