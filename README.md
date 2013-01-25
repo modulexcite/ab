@@ -12,6 +12,8 @@ resulting in software that is “natural”, based on actual use and runtime perform
 
 This library fulfills the automated experiments aspect for practicing EDD in a .NET development environment.
 If you're looking for the run-time metrics aspect of EDD, you can use [metrics-net](https://github.com/danielcrenna/metrics-net).
+AB integrates metrics-net automatically, so any metrics you're tracking from that library are automatically displayed in AB's metrics
+dashboard.
 
 Requirements
 ------------
@@ -33,9 +35,60 @@ using ab;
 
 public class ExperimentConfig
 {
-	public void Register()
-	{
-
-	}
+    public static void Register()
+    {
+        Experiments.Register(
+            name: "Jokes on link", 
+            description: "Testing to prove that more people will click the link if there's a joke on it.",
+            alternatives: new object[] { true, false }, // This is the default, common "A/B" case
+            metrics: new [] { "Button clicks" }
+        );
+    }
 }
 ```
+
+**Third**, start collecting experiment data, in the back:
+
+```csharp
+public class HomeController : Controller
+{
+    public ActionResult Index()
+    {
+        return View();
+    }
+
+    public ActionResult ClicketyClick()
+    {
+        // Increment a counter for this named metric
+        M.Track("Button clicks");
+        
+        return View();
+    }
+}
+```
+
+And in the front:
+
+```cshtml
+@using ab
+<h2>Index</h2>
+
+<p>Here, dear user, is a button you should totally click:</p>
+
+@if(AB.Group("Jokes on link") == 1)
+{
+    <a href="@Url.Action("ClicketyClick", "Home")">I am boring, don't click me.</a>    
+}
+else
+{
+    <a href="@Url.Action("ClicketyClick", "Home")">Why did the chicken cross the road? To get to the other side!</a>
+}
+```
+
+
+
+License
+-------
+AB is copyright (c) 2013 Conatus Creative Inc.
+
+It is published under The MIT License, see [LICENSE.md](https://raw.github.com/danielcrenna/ab/master/LICENSE.md) for details.

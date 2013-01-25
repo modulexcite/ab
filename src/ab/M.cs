@@ -1,28 +1,14 @@
 ﻿using System;
 using metrics;
+using metrics.Serialization;
 
 namespace ab
 {
-    public class M : IMetric
+    public class M 
     {
-        public const string Header = "__m__track__";
+        internal const string Header = "__m__track__";
         private const string Separator = "__";
-
-        public string Name { get; set; }
-
-        public object[] GetValues(DateTime start, DateTime end)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string Description { get; set; }
-
-        public M(string tag, string description)
-        {
-            Name = tag;
-            Description = description;
-        }
-
+        
         public static void Track(string metric, int increment = 1)
         {
             if (increment <= 0) return;
@@ -34,6 +20,11 @@ namespace ab
         private static string GetMetricName(string tag)
         {
             return string.Concat(Header, tag, Separator, DateTime.Today.ToUnixTime());
+        }
+
+        public static string Dump()
+        {
+            return Serializer.Serialize(Metrics.AllSorted);
         }
     }
 }

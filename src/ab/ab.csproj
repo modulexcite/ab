@@ -53,15 +53,21 @@
     <Compile Include="Experiments.cs" />
     <Compile Include="ICopyable.cs" />
     <Compile Include="Identity.cs" />
-    <Compile Include="IMetric.cs" />
     <Compile Include="M.cs" />
     <Compile Include="MetricKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadOnlyDictionary.cs" />
     <Compile Include="TimeExtensions.cs" />
+    <Compile Include="UI\UILoader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\ab.Lab\Views\AB\Index.cshtml">
+      <Link>UI\Index.cshtml</Link>
+    </EmbeddedResource>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DataAccess\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

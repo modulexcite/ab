@@ -1,4 +1,5 @@
-﻿using System.Web.Mvc;
+﻿using System.Text;
+using System.Web.Mvc;
 
 namespace ab.Lab.Controllers
 {
@@ -6,7 +7,19 @@ namespace ab.Lab.Controllers
     {
         public ActionResult Index()
         {
-            return View();
+            var model = Experiments.AllSorted.Values;
+            return View(model);
+        }
+
+        public ActionResult Metrics()
+        {
+            var result = new ContentResult
+            {
+                Content = M.Dump(),
+                ContentType = "application/json",
+                ContentEncoding = Encoding.UTF8
+            };
+            return result;
         }
     }
 }

@@ -4,7 +4,7 @@
 @using ab
 <h2>Index</h2>
 
-<p>Here dear user is a button you should totally click:</p>
+<p>Here, dear user, is a button you should totally click:</p>
 
 @if(AB.Group("Jokes on link") == 1)
 {
@@ -14,3 +14,6 @@ else
 {
     <a href="@Url.Action("ClicketyClick", "Home")">Why did the chicken cross the road? To get to the other side!</a>
 }
+
+
+@*<a href="@Url.Action("ClicketyClick", "Home")">@AB.Value("Jokes on link")</a>*@

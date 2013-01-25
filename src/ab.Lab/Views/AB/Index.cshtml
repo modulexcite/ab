@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@model ICollection<ab.Experiment>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -50,7 +51,7 @@
                 <div class="nav-collapse collapse">
                     <ul class="nav">
                         <li class="active"><a href="#">Experiments</a></li>
-                        <li><a href="#about">Metrics</a></li>
+                        <li><a href="@Url.Action("Metrics", "AB")">Metrics</a></li>
                     </ul>
                 </div>
                 <!--/.nav-collapse -->
@@ -60,10 +61,15 @@
     
     <div class="container">
         
+        <ul>
+@foreach(var e in Model) {
+            <li>@e.Name</li>
+}
+        </ul>
+
         <div class="d3-widget">
             <div id="surface"></div>
         </div>
-
     </div>
     
 
