@@ -17,12 +17,12 @@ namespace ab
             get { return new ReadOnlyDictionary<ExperimentKey, Experiment>(new SortedDictionary<ExperimentKey, Experiment>(Inner)); }
         }
 
-        public static Experiment Register(string name, params string[] metrics)
+        public static Experiment Register(string name, string description, params string[] metrics)
         {
-            return GetOrAdd(new ExperimentKey(name), new Experiment(name, metrics));
+            return GetOrAdd(new ExperimentKey(name), description, new Experiment(name, description, metrics));
         }
 
-        private static T GetOrAdd<T>(ExperimentKey name, T experiment) where T : Experiment
+        private static T GetOrAdd<T>(ExperimentKey name, string description, T experiment) where T : Experiment
         {
             Experiment value;
             if (Inner.TryGetValue(name, out value))

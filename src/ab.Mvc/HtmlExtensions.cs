@@ -11,6 +11,6 @@ namespace ab.Mvc
             var exp = Experiments.All[new ExperimentKey(experiment)];
             Console.WriteLine(exp.Group);
             return new MvcHtmlString(exp.Group.ToString());
-        }}
-
+        }
+    }
 }
