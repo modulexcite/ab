@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0ED0D498-33F2-400C-BD18-3CB91B4945A0}"
 	ProjectSection(SolutionItems) = preProject
 		..\README.md = ..\README.md
+		..\TODO.md = ..\TODO.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ab.Tests", "ab.Tests\ab.Tests.csproj", "{FF810999-432D-43F9-88A7-DEC2E962B54C}"

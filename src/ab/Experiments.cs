@@ -3,7 +3,11 @@ using System.Collections.Generic;
 
 namespace ab
 {
-    public class Experiments
+    /// <summary>
+    /// A central repository for registering experiments with available metrics.
+    /// Both experiments and metrics are loosely referenced by name.
+    /// </summary>
+    public static class Experiments 
     {
         private static readonly ConcurrentDictionary<ExperimentKey, Experiment> Inner = new ConcurrentDictionary<ExperimentKey, Experiment>();
 

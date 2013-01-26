@@ -15,7 +15,7 @@ namespace ab.Lab.Controllers
         {
             var result = new ContentResult
             {
-                Content = M.Dump(),
+                Content = "TODO",
                 ContentType = "application/json",
                 ContentEncoding = Encoding.UTF8
             };

@@ -34,7 +34,7 @@
       <HintPath>..\packages\FluentMigrator.1.0.6.0\lib\40\FluentMigrator.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
-      <HintPath>..\src\packages\NUnit.2.6.2\lib\nunit.framework.dll</HintPath>
+      <HintPath>..\packages\NUnit.2.6.2\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,7 +48,7 @@
     <Compile Include="AudienceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Schema\001_Empty.cs" />
-    <Compile Include="Schema\002_ABExperiment.cs" />
+    <Compile Include="Schema\002_Experiment.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
