@@ -7,8 +7,18 @@ namespace ab.Lab.Controllers
     {
         public ActionResult Index()
         {
-            var model = Experiments.AllSorted.Values;
-            return View(model);
+            return View();
+        }
+
+        public ContentResult Experiments()
+        {
+            var result = new ContentResult
+            {
+                Content = ab.Experiments.Json(),
+                ContentType = "application/json",
+                ContentEncoding = Encoding.UTF8
+            };
+            return result;
         }
 
         public ActionResult Metrics()

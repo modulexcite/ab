@@ -4,6 +4,12 @@ namespace ab
 {
     public static class AB
     {
+        private static ExperimentRepository _experimentRepository;
+        static AB()
+        {
+            _experimentRepository = new ExperimentRepository();
+        }
+
         /// <summary>
         /// Returns whether the current identity is in an alternate group than the control group. 
         /// Useful for simple AB tests with two alternatives. 
@@ -63,7 +69,7 @@ namespace ab
         public static IHtmlString Value(string experiment)
         {
             var exp = GetExperiment(experiment);
-            var choice = exp == null ? "?" : exp.CurrentAlternative;
+            var choice = exp == null ? "?" : exp.AlternativeValue;
             return new HtmlString(choice.ToString());
         }
 
@@ -89,7 +95,7 @@ namespace ab
 
         private static Experiment GetExperiment(string experiment)
         {
-            var exp = Experiments.All[new ExperimentKey(experiment)];
+            var exp = _experimentRepository.GetByName(experiment);
             return exp;
         }
     }

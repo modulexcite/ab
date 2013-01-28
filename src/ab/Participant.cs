@@ -13,8 +13,21 @@ namespace ab
         public int? Shown { get; set; }
 
         /// <summary>
-        /// Whether the participant converted on a shown identity
+        /// The total number of times the alternative was shown to the participant
         /// </summary>
-        public bool Converted { get; set; }
+        public int Seen { get; set; }
+
+        /// <summary>
+        /// Whether the participant converted on the alternative shown
+        /// </summary>
+        public bool Converted
+        {
+            get { return Conversions > 0; }
+        }
+
+        /// <summary>
+        /// The number of times the participant acted on the alternative
+        /// </summary>
+        public int Conversions { get; set; }
     }
 }

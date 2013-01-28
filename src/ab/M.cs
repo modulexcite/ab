@@ -1,48 +1,53 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Linq;
+using System.Collections.Generic;
 using metrics;
+using metrics.Core;
 
 namespace ab
 {
     public class M 
     {
-        private const string Separator = "__";
+        private static readonly SampleRepository SampleRepository;
+        private static readonly ExperimentRepository ExperimentRepository;
+
+        internal const string Separator = "__";
         internal const string Header = "__m__track__";
         
-        internal static IProducerConsumerCollection<Sample> Samples { get; set; }
-
         static M()
         {
-            Samples = new ConcurrentBag<Sample>();
+            SampleRepository = new SampleRepository();
+            ExperimentRepository = new ExperimentRepository();
         }
-        
+
         public static void Track(string metric, int increment = 1)
         {
             if (increment <= 0) return;
 
-            var now = DateTime.Now;
-            var today = DateTime.Today.ToUnixTime();
-            
-            // Track the counter
-            var counter = Metrics.Counter(typeof(M), InternalMetric(metric, today));
+            var counter = CounterFor(metric);
             counter.Increment(increment);
 
-            // Track a metric tick for analysis (currently is not correctly counting by date!)
-            Samples.TryAdd(new Sample
+            SampleRepository.Save(new Sample
             {
                 Metric = metric,
                 Value = counter.Count,
-                SampledAt = now
+                SampledAt = DateTime.UtcNow
             });
             
-            // Track conversions for any registered experiments
-            var experiments = Experiments.All.Values.Where(e => e.HasMetric(metric));
-            foreach(var experiment in experiments)
+            ExperimentRepository.Convert(metric);
+        }
+
+        internal static void CounterFor(IEnumerable<string> metrics)
+        {
+            foreach(var metric in metrics)
             {
-                experiment.Conversions[experiment.Alternative]++;
-                experiment.CurrentParticipant.Converted = true;
+                CounterFor(metric);
             }
+        }
+
+        internal static CounterMetric CounterFor(string metric, long? today = null)
+        {
+            var counter = Metrics.Counter(typeof(M), InternalMetric(metric, today ?? DateTime.Today.ToUnixTime()));
+            return counter;
         }
 
         private static string InternalMetric(string tag, long timestamp)

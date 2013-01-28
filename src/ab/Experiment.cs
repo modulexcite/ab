@@ -1,55 +1,118 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ab
 {
     public class Experiment : ICopyable<Experiment>
     {
         private readonly HashSet<string> _metrics;
-        private readonly object[] _alternatives;
+        protected internal readonly object[] _alternatives;
 
         public string Name { get; private set; }
         public string Description { get; set; }
-        public Func<string> Identify { get; set; }
         public int Alternatives
         {
             get { return _alternatives.Length; }
         }
 
-        public int? Outcome { get; set; }
-        public DateTime? ConcludedAt { get; set; }
-        public Func<Experiment, bool> Conclude { get; set; }
-        public Func<Experiment, int> Choose { get; set; }
+        public Func<string> Identify { get; private set; }
+        public Func<Experiment, bool> Conclude { get; private set; }
+        public Func<Experiment, int> Choose { get; private set; }
 
-        private readonly IDictionary<string, Participant> _participants; 
-        public IEnumerable<Participant> Participants
+        public int? Outcome { get; private set; }
+        public DateTime CreatedAt { get; internal set; }
+        public DateTime? ConcludedAt { get; private set; }
+        
+        private readonly ConcurrentDictionary<string, Participant> _participants; 
+        public int Participants
         {
-            get { return _participants.Values; }
+            get { return _participants.Count; }
+        }
+        public Dictionary<int, int> ParticipantsByAlternative
+        {
+            get
+            {
+                var hash = new Dictionary<int, int>();
+                for (var i = 1; i <= Alternatives; i++)
+                {
+                    hash.Add(i, 0);
+                }
+
+                foreach (var participant in _participants.Values)
+                {
+                    if (!participant.Shown.HasValue)
+                    {
+                        continue;
+                    }
+                    hash[participant.Shown.Value]++;
+                }
+                return hash;
+            }
+        }
+        
+        public IDictionary<int, int> ConvertedByAlternative
+        {
+            get
+            {
+                var hash = new Dictionary<int, int>();
+                for (var i = 1; i <= Alternatives; i++)
+                {
+                    hash.Add(i, 0);
+                }
+
+                foreach (var participant in _participants.Values)
+                {
+                    if (!participant.Shown.HasValue)
+                    {
+                        continue;
+                    }
+                    if(participant.Converted)
+                    {
+                        hash[participant.Shown.Value]++;
+                    }
+                }
+                return hash;
+            }
         }
 
-        internal IDictionary<int, int> Conversions { get; private set; }
+        internal IDictionary<int, int> ConversionsByAlternative
+        {
+            get
+            {
+                var hash = new Dictionary<int, int>();
+                for (var i = 1; i <= Alternatives; i++)
+                {
+                    hash.Add(i, 0);
+                }
+
+                foreach (var participant in _participants.Values)
+                {
+                    if (!participant.Shown.HasValue)
+                    {
+                        continue;
+                    }
+                    hash[participant.Shown.Value] += participant.Conversions;
+                }
+                return hash;
+            }
+        }
         
-        protected internal Experiment(string name, string description, object[] alternatives = null, params string[] metrics)
+        protected internal Experiment(string name, string description, Func<string> identify = null, Func<Experiment, bool> conclude = null, Func<Experiment, int> choose = null, object[] alternatives = null, params string[] metrics)
         {
             Name = name;
             Description = description;
+            CreatedAt = DateTime.UtcNow;
             
             _alternatives = alternatives ?? new object[] { true, false };
             _metrics = new HashSet<string>(metrics);
             
-            Identify = Identity.Get.Value;
-            Conclude = experiment => false;
-            Choose = HighestDistinctConvertingAlternative();
+            Identify = identify ?? Identity.Get.Value;
+            Conclude = conclude ?? (experiment => false);
+            Choose = choose ?? HighestDistinctConvertingAlternative();
 
             _participants = new ConcurrentDictionary<string, Participant>();
-            
-            Conversions = new ConcurrentDictionary<int, int>();
-            for(var i = 1; i <= Alternatives; i++)
-            {
-                Conversions.Add(i, 0);
-            }
         }
 
         internal bool HasMetric(string metric)
@@ -65,24 +128,12 @@ namespace ab
                 {
                     return 1;
                 }
-                var hash = new Dictionary<int, int>();
-                foreach (var participant in _participants.Values)
-                {
-                    if (!participant.Shown.HasValue)
-                    {
-                        continue;
-                    }
-                    int alternative;
-                    if (!hash.TryGetValue(participant.Shown.Value, out alternative))
-                    {
-                        hash.Add(alternative, 1);
-                    }
-                    else
-                    {
-                        hash[alternative]++;
-                    }
-                }
-                var winner = hash.First();
+                
+                var hash = ParticipantsByAlternative;
+                IEnumerator enumerator = hash.Keys.GetEnumerator();
+                enumerator.MoveNext();
+                var winner = (KeyValuePair<int, int>)enumerator.Current;
+
                 foreach (var alternative in hash)
                 {
                     if (alternative.Value > winner.Value)
@@ -94,12 +145,7 @@ namespace ab
             };
         }
 
-        public Experiment Copy
-        {
-            get { return new Experiment(Name, Description, _alternatives, _metrics.ToArray()); }
-        }
-
-        public object CurrentAlternative
+        public object AlternativeValue
         {
             get { return _alternatives[Alternative - 1]; }
         }
@@ -146,9 +192,26 @@ namespace ab
             if (!_participants.TryGetValue(identity, out participant))
             {
                 participant = new Participant {Identity = identity};
-                _participants.Add(identity, participant);
+                _participants.TryAdd(identity, participant);
             }
             return participant;
+        }
+
+        public Experiment Copy
+        {
+            get { return new Experiment(Name, Description, Identify, Conclude, Choose, _alternatives, ToArray(_metrics)); }
+        }
+
+        public string[] ToArray(HashSet<string> set)
+        {
+            var array = new string[set.Count];
+            var i = 0;
+            foreach(var item in set)
+            {
+                array[i] = item;
+                i++;
+            }
+            return array;
         }
     }
 }
