@@ -1147,16 +1147,6 @@
             Returns a copy of all currently registered metrics in an immutable collection, sorted by owner and name
             </summary>
         </member>
-        <member name="T:metrics.Serialization.JsonConventionResolver">
-            <summary>
-            Serializes JSON like the rest of the universe
-            </summary>
-        </member>
-        <member name="T:metrics.Serialization.MetricsConverter">
-            <summary>
-            Properly serializes a metrics hash
-            </summary>
-        </member>
         <member name="T:metrics.Stats.EWMA">
             <summary>
              An exponentially-weighted moving average

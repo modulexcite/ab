@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Text;
-using metrics;
 
 namespace ab
 {
@@ -22,10 +20,11 @@ namespace ab
 
         public static string Json()
         {
-            var experiments = ViewModelMapper.ProjectExperiments(ExperimentRepository.GetAll().OrderByDescending(e => e.CreatedAt));
-            var metrics = ViewModelMapper.ProjectMetrics(Metrics.AllSorted);
-
-            return JsonSerializer.SerializeToString(new { experiments, metrics });
+            return JsonSerializer.SerializeToString(new 
+            {
+                experiments = ViewModelMapper.ProjectExperiments(ExperimentRepository.GetAll().OrderByDescending(e => e.CreatedAt)),
+                metrics = ViewModelMapper.ProjectMetrics(metrics.Metrics.AllSorted)
+            });
         }
         
         public static void Register(string name, string description, Func<string> identify = null, Func<Experiment, bool> conclude = null, Func<Experiment, int> choose = null, object[] alternatives = null, params string[] metrics)

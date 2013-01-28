@@ -46,7 +46,7 @@ namespace ab
 
         internal static CounterMetric CounterFor(string metric, long? today = null)
         {
-            var counter = Metrics.Counter(typeof(M), InternalMetric(metric, today ?? DateTime.Today.ToUnixTime()));
+            var counter = metrics.Metrics.Counter(typeof(M), InternalMetric(metric, today ?? DateTime.Today.ToUnixTime()));
             return counter;
         }
 
