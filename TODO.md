@@ -11,4 +11,5 @@ UI
 [ ] Show/hide internal AB metrics from metrics dashboard
 [ ] Warning when there are concluded experiments in the DB that aren't in the registry
 [ ] All metrics with default viz types
+[ ] Transition to knockout vs. server-side template rendering
 [ ] Realtime updates with SignalR
