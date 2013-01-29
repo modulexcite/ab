@@ -1,105 +1,75 @@
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ab
 {
-    public class Experiment : ICopyable<Experiment>
+    public class Experiment
     {
         private readonly HashSet<string> _metrics;
-        protected internal readonly object[] _alternatives;
-
-        public string Name { get; private set; }
-        public string Description { get; set; }
-        public int Alternatives
+        private readonly object[] _alternatives;
+        private readonly ConcurrentDictionary<string, Participant> _participants;
+        
+        /// <summary>
+        /// The list of unique metric names being tracked
+        /// </summary>
+        public IEnumerable<string> Metrics
         {
-            get { return _alternatives.Length; }
+            get { return _metrics; }
         }
 
+        /// <summary>
+        /// All experiment alternative values
+        /// </summary>
+        public IEnumerable<object> Alternatives
+        {
+            get { return _alternatives; }
+        }
+
+        /// <summary>
+        /// All known participants (for whom an alternative has been shown)
+        /// </summary>
+        public IEnumerable<Participant> Participants
+        {
+            get { return _participants.Values; }
+        }
+
+        /// <summary>
+        /// The unique name of this experiment, which acts as a natural key
+        /// </summary>
+        public string Name { get; private set; }
+        
+        /// <summary>
+        /// The description of the experiment as registered; this is not persisted in any backing store
+        /// </summary>
+        public string Description { get; private  set; }
+        
+        /// <summary>
+        /// The function used to identify a user for cohort splits; by default, <code>Identify.Default</code> is used
+        /// </summary>
         public Func<string> Identify { get; private set; }
+        
+        /// <summary>
+        /// The function used to decide when to conclude an experiment; by default, <code>Conclusion.Default</code> is used
+        /// </summary>
         public Func<Experiment, bool> Conclude { get; private set; }
-        public Func<Experiment, int> Choose { get; private set; }
+
+        /// <summary>
+        /// The function used to decide the current winning alternative; by default, <code>Scoring.Default</code> is used
+        /// </summary>
+        public Func<Experiment, int> Score { get; private set; }
+
+        /// <summary>
+        /// The function used to decide what alternative to show to an identified participant; by default, <code>Audient.Default</code> is used
+        /// </summary>
+        public Func<string, int, int> SplitOn { get; private set; }
 
         public int? Outcome { get; private set; }
         public DateTime CreatedAt { get; internal set; }
         public DateTime? ConcludedAt { get; private set; }
         
-        private readonly ConcurrentDictionary<string, Participant> _participants; 
-        public int Participants
-        {
-            get { return _participants.Count; }
-        }
-        public Dictionary<int, int> ParticipantsByAlternative
-        {
-            get
-            {
-                var hash = new Dictionary<int, int>();
-                for (var i = 1; i <= Alternatives; i++)
-                {
-                    hash.Add(i, 0);
-                }
-
-                foreach (var participant in _participants.Values)
-                {
-                    if (!participant.Shown.HasValue)
-                    {
-                        continue;
-                    }
-                    hash[participant.Shown.Value]++;
-                }
-                return hash;
-            }
-        }
-        
-        public IDictionary<int, int> ConvertedByAlternative
-        {
-            get
-            {
-                var hash = new Dictionary<int, int>();
-                for (var i = 1; i <= Alternatives; i++)
-                {
-                    hash.Add(i, 0);
-                }
-
-                foreach (var participant in _participants.Values)
-                {
-                    if (!participant.Shown.HasValue)
-                    {
-                        continue;
-                    }
-                    if(participant.Converted)
-                    {
-                        hash[participant.Shown.Value]++;
-                    }
-                }
-                return hash;
-            }
-        }
-
-        internal IDictionary<int, int> ConversionsByAlternative
-        {
-            get
-            {
-                var hash = new Dictionary<int, int>();
-                for (var i = 1; i <= Alternatives; i++)
-                {
-                    hash.Add(i, 0);
-                }
-
-                foreach (var participant in _participants.Values)
-                {
-                    if (!participant.Shown.HasValue)
-                    {
-                        continue;
-                    }
-                    hash[participant.Shown.Value] += participant.Conversions;
-                }
-                return hash;
-            }
-        }
-        
-        protected internal Experiment(string name, string description, Func<string> identify = null, Func<Experiment, bool> conclude = null, Func<Experiment, int> choose = null, object[] alternatives = null, params string[] metrics)
+        protected internal Experiment(string name, string description, Func<string> identify = null, Func<Experiment, bool> conclude = null, Func<Experiment, int> score = null, Func<string, int, int> splitOn = null, object[] alternatives = null, params string[] metrics)
         {
             Name = name;
             Description = description;
@@ -108,54 +78,57 @@ namespace ab
             _alternatives = alternatives ?? new object[] { true, false };
             _metrics = new HashSet<string>(metrics);
             
-            Identify = identify ?? Identity.Get.Value;
-            Conclude = conclude ?? (experiment => false);
-            Choose = choose ?? HighestDistinctConvertingAlternative();
+            Identify = identify ?? ab.Identify.Default.Value;
+            Conclude = conclude ?? Conclusion.Default.Value;
+            Score = score ?? Scoring.Default.Value;
+            SplitOn = splitOn ?? Audience.Default.Value;
 
             _participants = new ConcurrentDictionary<string, Participant>();
         }
 
-        internal bool HasMetric(string metric)
+        /// <summary>
+        /// Forces the selection of the given alternative for the current participant;
+        /// </summary>
+        /// <param name="alternative"></param>
+        public void Choose(int alternative)
         {
-            return _metrics.Contains(metric);
-        }
-
-        private Func<Experiment, int> HighestDistinctConvertingAlternative()
-        {
-            return experiment =>
+            if(CurrentParticipant.Shown.HasValue && CurrentParticipant.Shown.Value == alternative)
             {
-                if (_participants.Count == 0)
-                {
-                    return 1;
-                }
-                
-                var hash = ParticipantsByAlternative;
-                IEnumerator enumerator = hash.Keys.GetEnumerator();
-                enumerator.MoveNext();
-                var winner = (KeyValuePair<int, int>)enumerator.Current;
-
-                foreach (var alternative in hash)
-                {
-                    if (alternative.Value > winner.Value)
-                    {
-                        winner = alternative;
-                    }
-                }
-                return winner.Key;
-            };
+                return;
+            }
+            CurrentParticipant.Seen = 0;
+            CurrentParticipant.Conversions = 0;
+            CurrentParticipant.Shown = alternative;
         }
 
-        public object AlternativeValue
+        /// <summary>
+        /// Forces a conclusion to this experiment, irrespective of the <see cref="Conclude"/> function
+        /// </summary>
+        public void End()
         {
-            get { return _alternatives[Alternative - 1]; }
+            ConcludedAt = DateTime.Now;
+            Outcome = Score(this);
         }
 
-        public Participant CurrentParticipant
+        /// <summary>
+        /// Retrieves the current participant; if none found, they are added to the cohort
+        /// </summary>
+        internal Participant CurrentParticipant
         {
             get { return EnsureParticipant(Identify()); }
         }
 
-        internal int Alternative
+        /// <summary>
+        /// The value of the alternative for the current participant </summary>
+        internal object AlternativeValue
+        {
+            get { return _alternatives[AlternativeIndex - 1]; }
+        }
+
+        /// <summary>
+        /// The index of the alternative for the current participant
+        /// </summary>
+        internal int AlternativeIndex
         {
             get
             {
@@ -165,25 +138,41 @@ namespace ab
                 }
                 
                 var identity = Identify();
-
                 var participant = EnsureParticipant(identity);
 
+                int alternative;
                 if(participant.Shown.HasValue)
                 {
-                    return participant.Shown.Value;
+                    alternative = participant.Shown.Value;
                 }
-
-                var alternative = Audience.Split.Value(identity, Alternatives);
-                participant.Shown = alternative;
+                else
+                {
+                    alternative = SplitOn(identity, Alternatives.Count());
+                    participant.Shown = alternative;
+                }
                 
                 if(Conclude(this))
                 {
-                    ConcludedAt = DateTime.Now;
-                    Outcome = Choose(this);
+                    End();
                 }
 
                 return alternative;
             }
+        }
+        
+        internal bool HasMetric(string metric)
+        {
+            return _metrics.Contains(metric);
+        }
+
+        internal Dictionary<int, int> EmptyHash()
+        {
+            var hash = new Dictionary<int, int>();
+            for (var i = 1; i <= Alternatives.Count(); i++)
+            {
+                hash.Add(i, 0);
+            }
+            return hash;
         }
 
         private Participant EnsureParticipant(string identity)
@@ -195,23 +184,6 @@ namespace ab
                 _participants.TryAdd(identity, participant);
             }
             return participant;
-        }
-
-        public Experiment Copy
-        {
-            get { return new Experiment(Name, Description, Identify, Conclude, Choose, _alternatives, ToArray(_metrics)); }
-        }
-
-        public string[] ToArray(HashSet<string> set)
-        {
-            var array = new string[set.Count];
-            var i = 0;
-            foreach(var item in set)
-            {
-                array[i] = item;
-                i++;
-            }
-            return array;
         }
     }
 }

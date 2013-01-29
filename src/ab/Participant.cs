@@ -8,17 +8,12 @@ namespace ab
         public string Identity { get; set; }
 
         /// <summary>
-        /// The alternative shown to this participant, by index
+        /// The alternative shown to this participant, by index (only counted once)
         /// </summary>
         public int? Shown { get; set; }
-
+        
         /// <summary>
-        /// The total number of times the alternative was shown to the participant
-        /// </summary>
-        public int Seen { get; set; }
-
-        /// <summary>
-        /// Whether the participant converted on the alternative shown
+        /// Whether the participant converted on the alternative shown (only counted once)
         /// </summary>
         public bool Converted
         {
@@ -26,7 +21,12 @@ namespace ab
         }
 
         /// <summary>
-        /// The number of times the participant acted on the alternative
+        /// The total number of times the alternative was shown to the participant (counted multiple times)
+        /// </summary>
+        public int Seen { get; set; }
+        
+        /// <summary>
+        /// The number of times the participant acted on the alternative (counted multiple times)
         /// </summary>
         public int Conversions { get; set; }
     }

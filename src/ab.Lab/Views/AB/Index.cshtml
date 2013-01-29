@@ -11,9 +11,9 @@
             <p class="description" data-bind="text: description"></p>
                     
             <table>
-                <caption></caption>
+                <caption>Is it option A?</caption>
                 <tbody data-bind="foreach: alternatives">
-                    <tr>
+                    <tr data-bind="css: { choice: choice }">
                         <td class="option" data-bind="text: name"></td>
                         <td class="value" data-bind="text: value"></td>
                         <td class="value"><span data-bind="text: participants"></span> participants</td>
@@ -22,12 +22,24 @@
                             <span data-bind="text: conversion_rate"></span> %
                         </td>
                         <td class="action">
-                                    
+                            <!-- ko if: $parent.active -->
+                                <!-- ko if: showing -->
+                                showing
+                                <!-- /ko -->
+                                <!-- ko ifnot: showing -->
+                                <a class="button chooses" title="Show me this alternative from now on" href="#" data-url="#" data-bind="attr: { 'data-id': $parent.name }">show</a>                              
+                                <!-- /ko -->
+                            <!-- /ko -->
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <p class="meta">Started <abbr class="timeago" data-bind="attr: { title: created_at }" title="2013-01-28T13:06:32Z"></abbr></p>
+            <p class="meta">
+                Started <abbr class="timeago" data-bind="attr: { title: created_at }" title="2013-01-28T13:06:32Z"></abbr>
+                <!-- ko ifnot: active -->
+                | Completed <abbr class="timeago" data-bind="attr: { title: concluded_at }" title="2013-01-28T13:06:32Z"></abbr>
+                <!-- /ko -->
+            </p>
         </li>
     </ul>
 

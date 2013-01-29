@@ -27,11 +27,16 @@ namespace ab
             });
         }
         
-        public static void Register(string name, string description, Func<string> identify = null, Func<Experiment, bool> conclude = null, Func<Experiment, int> choose = null, object[] alternatives = null, params string[] metrics)
+        public static void Register(string name, string description, Func<string> identify = null, Func<Experiment, bool> conclude = null, Func<Experiment, int> score = null, Func<string, int, int> splitOn = null, object[] alternatives = null, params string[] metrics)
         {
-            var experiment = new Experiment(name, description, identify, conclude, choose, alternatives, metrics);
+            var experiment = new Experiment(name, description, identify, conclude, score, splitOn, alternatives, metrics);
             ExperimentRepository.Save(experiment);
             M.CounterFor(metrics.Where(m => m != null).Select(m => m.Trim()));
+        }
+
+        public static Experiment Get(string name)
+        {
+            return ExperimentRepository.GetByName(name);
         }
     }
 }

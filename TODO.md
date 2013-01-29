@@ -4,6 +4,8 @@ Backend
 [ ] Persistence layer using adapter pattern and multiple listeners (like Console, Database, etc.)
 [ ] Hash of metric increments by date (count is based on daily values only)
 [ ] Class cleanup and separation
+[ ] Remote metrics support (for plugins)
+[ ] Google Analytics integration
 
 UI
 --

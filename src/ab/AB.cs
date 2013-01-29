@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Web;
 
 namespace ab
@@ -53,7 +54,7 @@ namespace ab
         public static int Group(string experiment)
         {
             var exp = GetExperiment(experiment);
-            return exp == null ? 1 : exp.Alternative;
+            return exp == null ? 1 : exp.AlternativeIndex;
         }
 
         /// <summary>
@@ -90,7 +91,7 @@ namespace ab
         {
             var exp = GetExperiment(experiment);
             if(exp == null) return new HtmlString("?");
-            return values.Length < exp.Alternatives ? Value(experiment) : new HtmlString(values[exp.Alternative - 1]);
+            return values.Length < exp.Alternatives.Count() ? Value(experiment) : new HtmlString(values[exp.AlternativeIndex - 1]);
         }
 
         private static Experiment GetExperiment(string experiment)

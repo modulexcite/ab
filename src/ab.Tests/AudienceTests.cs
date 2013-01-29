@@ -26,7 +26,7 @@ namespace ab.Tests
 
             foreach(var item in items)
             {
-                var index = Audience.Split.Value(item, n);
+                var index = Audience.Default.Value(item, n);
                 hash[index].Add(item);
             }
 

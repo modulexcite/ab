@@ -3,9 +3,9 @@ using System.Web;
 
 namespace ab
 {
-    public class Identity
+    public class Identify
     {
-        public static Lazy<Func<string>> Get = new Lazy<Func<string>>(BestEffortByCurrentRequest);
+        public static Lazy<Func<string>> Default = new Lazy<Func<string>>(BestEffortByCurrentRequest);
 
         /// <summary>
         /// A default identity that is based on the user first, if they are authenticated,
