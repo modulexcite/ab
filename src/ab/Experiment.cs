@@ -85,7 +85,7 @@ namespace ab
 
             _participants = new ConcurrentDictionary<string, Participant>();
         }
-
+        
         /// <summary>
         /// Forces the selection of the given alternative for the current participant;
         /// </summary>
