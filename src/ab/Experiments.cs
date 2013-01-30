@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ServiceStack.Text;
 
 namespace ab
 {
@@ -15,16 +14,13 @@ namespace ab
 
         static Experiments()
         {
-            JsConfig.EmitLowercaseUnderscoreNames = true;
-            JsConfig.PropertyConvention = JsonPropertyConvention.Lenient;
-
             ExperimentRepository = new ExperimentRepository();
             MetricRepository = new MetricRepository();
         }
 
         public static string Json()
         {
-            return JsonSerializer.SerializeToString(new 
+            return Serializer.ToJson(new
             {
                 experiments = ViewModelMapper.ProjectExperiments(ExperimentRepository.GetAll().OrderByDescending(e => e.CreatedAt)),
                 /*metrics = ViewModelMapper.ProjectMetrics(metrics.Metrics.AllSorted)*/
@@ -36,37 +32,43 @@ namespace ab
             var experiment = new Experiment(name, description, identify, conclude, score, splitOn, alternatives, metrics);
             ExperimentRepository.Save(experiment);
 
-            foreach(var entry in experiment.Metrics)
+            foreach (var metric in experiment.Metrics.Select(GetOrRegisterMetric))
             {
-                var metric = MetricRepository.GetByName(entry);
-                if(metric == null)
-                {
-                    metric = new InMemoryMetric(entry);
-                    MetricRepository.Save(metric);
-                }
-
-                metric.Hook += (sender, args) =>
-                {
-                    if (!experiment.IsActive)
-                    {
-                        return;
-                    }
-
-                    experiment.CurrentParticipant.Conversions++;
-                    experiment.CurrentParticipant.Seen++;
-                    var index = experiment.AlternativeIndex;
-                    //def track!(metric_id, timestamp, count, *args)
-                    //   return unless active?
-                    //   identity = identity() rescue nil
-                    //   if identity
-                    //     return if connection.ab_showing(@id, identity)
-                    //     index = alternative_for(identity)
-                    //     connection.ab_add_conversion @id, index, identity, count
-                    //     check_completion!
-                    //   end
-                    // end
-                };
+                metric.Hook += (sender, args) => Track(experiment, args);
             }
+        }
+
+        private static void Track(Experiment experiment, MetricEventArgs args)
+        {
+            if (!experiment.IsActive)
+            {
+                return;
+            }
+            args = args;
+            experiment.CurrentParticipant.Conversions++;
+            experiment.CurrentParticipant.Seen++;
+            var index = experiment.AlternativeIndex;
+            //def track!(metric_id, timestamp, count, *args)
+            //   return unless active?
+            //   identity = identity() rescue nil
+            //   if identity
+            //     return if connection.ab_showing(@id, identity)
+            //     index = alternative_for(identity)
+            //     connection.ab_add_conversion @id, index, identity, count
+            //     check_completion!
+            //   end
+            // end
+        }
+
+        private static IMetric GetOrRegisterMetric(string entry)
+        {
+            var metric = MetricRepository.GetByName(entry);
+            if (metric == null)
+            {
+                metric = new InMemoryMetric(entry);
+                MetricRepository.Save(metric);
+            }
+            return metric;
         }
 
         public static Experiment Get(string name)
