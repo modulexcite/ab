@@ -10,7 +10,13 @@ namespace ab
         private readonly HashSet<string> _metrics;
         private readonly object[] _alternatives;
         private readonly ConcurrentDictionary<string, Participant> _participants;
-        
+
+        /// <summary>
+        /// The type of experiment conducted; this is meant to be a future extension 
+        /// point for custom experiments, but is currently limited to <see cref="ABTest"/>.
+        /// </summary>
+        public IExperimentType Type { get; private set; }
+
         /// <summary>
         /// The list of unique metric names being tracked
         /// </summary>
@@ -22,7 +28,7 @@ namespace ab
         /// <summary>
         /// All experiment alternative values
         /// </summary>
-        public IEnumerable<object> Alternatives
+        public IList<object> Alternatives
         {
             get { return _alternatives; }
         }
@@ -56,26 +62,40 @@ namespace ab
         public Func<Experiment, bool> Conclude { get; private set; }
 
         /// <summary>
-        /// The function used to decide the current winning alternative; by default, <code>Scoring.Default</code> is used
+        /// The function used to decide the rank of each alternative; by default, <code>Scoring.Default</code> is used
+        /// <remarks>
+        /// Note that the outcome of this function may not end up as the selected choice in a report, 
+        /// as choices are also filtered by statistical significance and conversion (the alternative must have converted to count), 
+        /// but if an experiment concludes, this function is always used to decide the outcome regardless of significance.
+        /// </remarks>
         /// </summary>
-        public Func<Experiment, int> Score { get; private set; }
+        public Func<Experiment, IOrderedEnumerable<KeyValuePair<int, double>>> Score { get; private set; }
 
         /// <summary>
         /// The function used to decide what alternative to show to an identified participant; by default, <code>Audient.Default</code> is used
         /// </summary>
         public Func<string, int, int> SplitOn { get; private set; }
 
+        /// <summary>
+        /// The final outcome of this experiment; this value will override all subsequent scoring and is only set once
+        /// </summary>
         public int? Outcome { get; private set; }
         public DateTime CreatedAt { get; internal set; }
         public DateTime? ConcludedAt { get; private set; }
-        
-        protected internal Experiment(string name, string description, Func<string> identify = null, Func<Experiment, bool> conclude = null, Func<Experiment, int> score = null, Func<string, int, int> splitOn = null, object[] alternatives = null, params string[] metrics)
+
+        public bool IsActive
+        {
+            get { return !ConcludedAt.HasValue; }
+        }
+
+        protected internal Experiment(string name, string description, Func<string> identify = null, Func<Experiment, bool> conclude = null, Func<Experiment, IOrderedEnumerable<KeyValuePair<int, double>>> score = null, Func<string, int, int> splitOn = null, object[] alternatives = null, params string[] metrics)
         {
             Name = name;
             Description = description;
             CreatedAt = DateTime.UtcNow;
+            Type = new ABTest();
             
-            _alternatives = alternatives ?? new object[] { true, false };
+            _alternatives = alternatives ?? new object[] { false, true };
             _metrics = new HashSet<string>(metrics);
             
             Identify = identify ?? ab.Identify.Default.Value;
@@ -107,11 +127,11 @@ namespace ab
         public void End()
         {
             ConcludedAt = DateTime.Now;
-            Outcome = Score(this);
+            Outcome = Score(this).First().Key;
         }
 
         /// <summary>
-        /// Retrieves the current participant; if none found, they are added to the cohort
+        /// Retrieves the current participant; if none found, they are identified and added to the cohort
         /// </summary>
         internal Participant CurrentParticipant
         {
@@ -163,16 +183,6 @@ namespace ab
         internal bool HasMetric(string metric)
         {
             return _metrics.Contains(metric);
-        }
-
-        internal Dictionary<int, int> EmptyHash()
-        {
-            var hash = new Dictionary<int, int>();
-            for (var i = 1; i <= Alternatives.Count(); i++)
-            {
-                hash.Add(i, 0);
-            }
-            return hash;
         }
 
         private Participant EnsureParticipant(string identity)

@@ -5,10 +5,10 @@ namespace ab
 {
     public static class AB
     {
-        private static ExperimentRepository _experimentRepository;
+        private static readonly ExperimentRepository ExperimentRepository;
         static AB()
         {
-            _experimentRepository = new ExperimentRepository();
+            ExperimentRepository = new ExperimentRepository();
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace ab
 
         private static Experiment GetExperiment(string experiment)
         {
-            var exp = _experimentRepository.GetByName(experiment);
+            var exp = ExperimentRepository.GetByName(experiment);
             return exp;
         }
     }

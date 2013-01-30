@@ -11,7 +11,7 @@
             <p class="description" data-bind="text: description"></p>
                     
             <table>
-                <caption>Is it option A?</caption>
+                <caption data-bind="text: claims"></caption>
                 <tbody data-bind="foreach: alternatives">
                     <tr data-bind="css: { choice: choice }">
                         <td class="option" data-bind="text: name"></td>

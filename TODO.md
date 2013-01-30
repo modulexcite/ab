@@ -1,5 +1,6 @@
 Backend
 -------
+[ ] Alternative class should be used in Experiment class for consistency 
 [ ] Exclude robots from experiments
 [ ] Persistence layer using adapter pattern and multiple listeners (like Console, Database, etc.)
 [ ] Hash of metric increments by date (count is based on daily values only)

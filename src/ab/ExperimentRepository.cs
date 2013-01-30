@@ -5,20 +5,11 @@ namespace ab
 {
     public class ExperimentRepository
     {
-        private static readonly ConcurrentDictionary<ExperimentKey, Experiment> Inner = new ConcurrentDictionary<ExperimentKey, Experiment>();
+        private static readonly ConcurrentDictionary<string, Experiment> Inner = new ConcurrentDictionary<string, Experiment>();
         
-        public void Convert(string metric)
-        {
-            foreach (var experiment in GetByMetric(metric))
-            {
-                experiment.CurrentParticipant.Conversions++;
-                experiment.CurrentParticipant.Seen++;
-            }
-        }
-
         public void Save(Experiment experiment)
         {
-            var key = new ExperimentKey(experiment.Name);
+            var key = experiment.Name;
             Inner.AddOrUpdate(key, experiment, (n, m) => m);
         }
 

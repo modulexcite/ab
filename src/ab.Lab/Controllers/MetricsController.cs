@@ -1,4 +1,3 @@
-using System.Text;
 using System.Web.Mvc;
 
 namespace ab.Lab.Controllers
@@ -12,13 +11,7 @@ namespace ab.Lab.Controllers
 
         public ActionResult Metrics()
         {
-            var result = new ContentResult
-            {
-                Content = ab.Metrics.Json(),
-                ContentType = "application/json",
-                ContentEncoding = Encoding.UTF8
-            };
-            return result;
+            return View();
         }
     }
 }
