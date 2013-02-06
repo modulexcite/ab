@@ -18,7 +18,6 @@ dashboard.
 Requirements
 ------------
 * .NET 4.0
-* ASP.NET MVC 4
 
 How To Use
 ----------
@@ -41,7 +40,7 @@ public class ExperimentConfig
             name: "Jokes on link", 
             description: "Testing to prove that more people will click the link if there's a joke on it.",
             metrics: new [] { "Button clicks" },                             // Associates ticks against the "Button clicks" counter with this experiment
-            alternatives: new object[] { true, false },                      // Typed experiment alternatives ; default is common "A/B" binary case
+            alternatives: new object[] { false, true },                      // Optional experiment alternatives; default is common "A/B" binary case of false, and true
             conclude: experiment => experiment.Participants.Count()  == 10,  // Optional criteria for automatically concluding an experiment; default is never
             score: null, /* ... */                                           // Optional criteria for choosing best performer by index; default is best converting alternative
             splitOn: null /* ... */                                          // Optional criteria for splitting a cohort by the number of alternatives; default is a simple hash split
@@ -74,8 +73,6 @@ And in the front:
 
 ```cshtml
 @using ab
-<h2>Index</h2>
-
 <p>Here, dear user, is a button you should totally click:</p>
 
 @if(AB.Group("Jokes on link") == 1)
@@ -87,8 +84,6 @@ else
     <a href="@Url.Action("ClicketyClick", "Home")">Why did the chicken cross the road? To get to the other side!</a>
 }
 ```
-
-
 
 License
 -------

@@ -64,7 +64,7 @@ namespace ab
             return hash;
         }
 
-        public static IDictionary<int, T> EmptyHash<T>(this Experiment experiment)
+        private static IDictionary<int, T> EmptyHash<T>(this Experiment experiment)
         {
             var hash = new Dictionary<int, T>();
             for (var i = 1; i <= experiment.Alternatives.Count(); i++)

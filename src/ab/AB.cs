@@ -5,7 +5,7 @@ namespace ab
 {
     public static class AB
     {
-        private static readonly ExperimentRepository ExperimentRepository;
+        private static readonly IExperimentRepository ExperimentRepository;
         static AB()
         {
             ExperimentRepository = new ExperimentRepository();
@@ -18,11 +18,11 @@ namespace ab
         /// <example>
         /// if(AB.Test("My experiment"))
         /// {
-        ///     // Show this   
+        ///     // Show the alternative   
         /// }
         /// else
         /// {
-        ///     // Show that
+        ///     // Show the control
         /// }
         /// </example>
         /// <param name="experiment"></param>

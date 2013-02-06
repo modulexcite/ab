@@ -12,8 +12,10 @@ namespace ab.Tests.Schema
                 .WithColumn("Name").AsString(250).NotNullable().Indexed()
                 .WithColumn("Outcome").AsInt32().Nullable()
                 .WithColumn("CreatedAt").AsDateTime().NotNullable().WithDefault(SystemMethods.CurrentDateTime)
-                .WithColumn("CompletedAt").AsDateTime().Nullable()
+                .WithColumn("ConcludedAt").AsDateTime().Nullable()
                 ;
+
+
         }
     }
 }

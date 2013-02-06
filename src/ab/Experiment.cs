@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using TableDescriptor;
 
 namespace ab
 {
@@ -11,15 +12,19 @@ namespace ab
         private readonly object[] _alternatives;
         private readonly ConcurrentDictionary<string, Participant> _participants;
 
+        protected internal int Id { get; set; }
+
         /// <summary>
         /// The type of experiment conducted; this is meant to be a future extension 
         /// point for custom experiments, but is currently limited to <see cref="ABTest"/>.
         /// </summary>
+        [Transient]
         public IExperimentType Type { get; private set; }
 
         /// <summary>
         /// The list of unique metric names being tracked
         /// </summary>
+        [Transient]
         public IEnumerable<string> Metrics
         {
             get { return _metrics; }
@@ -28,6 +33,7 @@ namespace ab
         /// <summary>
         /// All experiment alternative values
         /// </summary>
+        [Transient]
         public IList<object> Alternatives
         {
             get { return _alternatives; }
@@ -36,6 +42,7 @@ namespace ab
         /// <summary>
         /// All known participants (for whom an alternative has been shown)
         /// </summary>
+        [Transient]
         public IEnumerable<Participant> Participants
         {
             get { return _participants.Values; }
@@ -47,18 +54,21 @@ namespace ab
         public string Name { get; private set; }
         
         /// <summary>
-        /// The description of the experiment as registered; this is not persisted in any backing store
+        /// The description of the experiment as registered, for dashboard display; this is not persisted in any backing store
         /// </summary>
+        [Transient]
         public string Description { get; private  set; }
         
         /// <summary>
         /// The function used to identify a user for cohort splits; by default, <code>Identify.Default</code> is used
         /// </summary>
+        [Transient]
         public Func<string> Identify { get; private set; }
         
         /// <summary>
         /// The function used to decide when to conclude an experiment; by default, <code>Conclusion.Default</code> is used
         /// </summary>
+        [Transient]
         public Func<Experiment, bool> Conclude { get; private set; }
 
         /// <summary>
@@ -69,11 +79,13 @@ namespace ab
         /// but if an experiment concludes, this function is always used to decide the outcome regardless of significance.
         /// </remarks>
         /// </summary>
+        [Transient]
         public Func<Experiment, IOrderedEnumerable<KeyValuePair<int, double>>> Score { get; private set; }
 
         /// <summary>
         /// The function used to decide what alternative to show to an identified participant; by default, <code>Audient.Default</code> is used
         /// </summary>
+        [Transient]
         public Func<string, int, int> SplitOn { get; private set; }
 
         /// <summary>
@@ -83,6 +95,7 @@ namespace ab
         public DateTime CreatedAt { get; internal set; }
         public DateTime? ConcludedAt { get; private set; }
 
+        [Transient]
         public bool IsActive
         {
             get { return !ConcludedAt.HasValue; }
@@ -104,6 +117,15 @@ namespace ab
             SplitOn = splitOn ?? Audience.Default.Value;
 
             _participants = new ConcurrentDictionary<string, Participant>();
+        }
+
+        protected internal Experiment(int id, string name, int? outcome, DateTime createdAt, DateTime? concludedAt)
+        {
+            Id = id;
+            Name = name;
+            Outcome = outcome;
+            CreatedAt = createdAt;
+            ConcludedAt = concludedAt;
         }
         
         /// <summary>

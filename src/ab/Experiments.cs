@@ -9,7 +9,7 @@ namespace ab
     /// </summary>
     public static class Experiments 
     {
-        private static readonly ExperimentRepository ExperimentRepository;
+        private static readonly IExperimentRepository ExperimentRepository;
         private static readonly MetricRepository MetricRepository;
 
         static Experiments()

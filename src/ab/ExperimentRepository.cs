@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ab
 {
-    public class ExperimentRepository
+    public class ExperimentRepository : IExperimentRepository
     {
         private static readonly ConcurrentDictionary<string, Experiment> Inner = new ConcurrentDictionary<string, Experiment>();
         

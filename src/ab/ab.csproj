@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dapper">
+      <HintPath>..\packages\tuxedo.1.0.0\lib\net40\Dapper.dll</HintPath>
+    </Reference>
     <Reference Include="metrics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=c13a758410ea1a16, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Metrics.1.0.7\lib\net40\metrics.dll</HintPath>
@@ -46,6 +49,15 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="TableDescriptor">
+      <HintPath>..\packages\tuxedo.1.0.0\lib\net40\TableDescriptor.dll</HintPath>
+    </Reference>
+    <Reference Include="tuxedo">
+      <HintPath>..\packages\tuxedo.1.0.0\lib\net40\tuxedo.dll</HintPath>
+    </Reference>
+    <Reference Include="tuxedo.Dapper">
+      <HintPath>..\packages\tuxedo.1.0.0\lib\net40\tuxedo.Dapper.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AB.cs" />
@@ -57,6 +69,7 @@
     <Compile Include="ExperimentExtensions.cs" />
     <Compile Include="ExperimentRepository.cs" />
     <Compile Include="Experiments.cs" />
+    <Compile Include="IExperimentRepository.cs" />
     <Compile Include="IExperimentType.cs" />
     <Compile Include="ICopyable.cs" />
     <Compile Include="Identify.cs" />
@@ -72,6 +85,7 @@
     <Compile Include="Score.cs" />
     <Compile Include="Scoring.cs" />
     <Compile Include="Serializer.cs" />
+    <Compile Include="SqlExperimentRepository.cs" />
     <Compile Include="TimeExtensions.cs" />
     <Compile Include="UI\UILoader.cs" />
     <Compile Include="ViewModelMapper.cs" />
